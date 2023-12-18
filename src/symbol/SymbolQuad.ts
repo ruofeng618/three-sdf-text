@@ -16,7 +16,6 @@ export type SymbolQuad = {
     w: number,
     h: number
   },
-  writingMode: any | void,
   glyphOffset: [number, number]
 };
 
@@ -26,7 +25,7 @@ export type SymbolQuad = {
  */
 export function getGlyphQuads(
   shaping: Shaping,
-  textOffset: [number, number],
+  textOffset:Array<number>,
   // layer: SymbolStyleLayer,
   alongLine: boolean,
   // feature: Feature,
@@ -98,7 +97,7 @@ export function getGlyphQuads(
     //   br._matMult(matrix);
     // }
 
-    quads.push({ tl, tr, bl, br, tex: rect, writingMode: shaping.writingMode, glyphOffset });
+    quads.push({ tl, tr, bl, br, tex: rect, glyphOffset });
   }
 
   return quads;

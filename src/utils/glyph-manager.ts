@@ -1,5 +1,5 @@
 // @ts-ignore
-import * as TinySDF from '@mapbox/tiny-sdf';
+import TinySDF from '@mapbox/tiny-sdf';
 import { AlphaImage, StyleGlyph } from '../symbol/AlphaImage';
 
 const fontsize = 24; // Font size in pixels
@@ -53,7 +53,7 @@ export function generateSDF(fontStack: string = '', char: string): StyleGlyph {
   if (!sdfGenerator) {
     // 创建 SDF
     sdfGenerator = sdfGeneratorCache[fontStack]
-      = new TinySDF(fontsize, buffer, radius, cutoff, fontFamily, fontWeight);
+      = new TinySDF({fontSize:fontsize, buffer, radius, cutoff, fontFamily, fontWeight});
   }
 
   if (!textMetricsCache[fontStack]) {
@@ -63,13 +63,16 @@ export function generateSDF(fontStack: string = '', char: string): StyleGlyph {
   if (!textMetricsCache[fontStack][char]) {
     // 使用 mapbox/tiny-sdf 中的 context
     // @see https://stackoverflow.com/questions/46126565/how-to-get-font-glyphs-metrics-details-in-javascript
-    textMetricsCache[fontStack][char] = sdfGenerator.ctx.measureText(char).width;
+    //@ts-ignore
+    textMetricsCache[fontStack][char] = sdfGenerator?.ctx.measureText(char).width;
   }
-
+  //glyphAdvance,glyphHeight,glyphLeft,glyphTop,glyphWidth,height,width
+  const {data}=sdfGenerator.draw(char)
   return {
     id: charCode,
     // 在 canvas 中绘制字符，使用 Uint8Array 存储 30*30 sdf 数据
-    bitmap: new AlphaImage({ width: 30, height: 30 }, sdfGenerator.draw(char)),
+    //@ts-ignore
+    bitmap: new AlphaImage({ width: 30, height: 30 }, data),
     metrics: {
       width: 24,
       height: 24,

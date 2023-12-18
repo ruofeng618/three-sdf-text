@@ -17,7 +17,6 @@ export type Shaping = {
   bottom: number,
   left: number,
   right: number,
-  writingMode: 1 | 2,
   lineCount: number,
   text: string // 原始文本
 };
@@ -106,7 +105,6 @@ function shapeLines(shaping: Shaping,
   lineHeight: number,
   textAnchor: SymbolAnchor,
   textJustify: TextJustify,
-  writingMode: 1 | 2,
   spacing: number,
   fontStack: string) {
   // the y offset *should* be part of the font metadata
@@ -172,13 +170,11 @@ export function shapeText(
   text: string,
   glyphs: { [key: string]: { [key: number]: StyleGlyph } },
   defaultFontStack: string,
-  maxWidth: number,
   lineHeight: number,
   textAnchor: SymbolAnchor,
   textJustify: TextJustify,
   spacing: number,
-  translate: [number, number],
-  writingMode: 1 | 2): Shaping | false {
+  translate:Array<number>): Shaping | false {
 
   // TODO：处理换行
   const lines = text.split('\n');
@@ -191,11 +187,10 @@ export function shapeText(
     bottom: translate[1],
     left: translate[0],
     right: translate[0],
-    writingMode,
     lineCount: lines.length
   };
 
-  shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, defaultFontStack);
+  shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, textJustify, spacing, defaultFontStack);
   if (!positionedGlyphs.length) return false;
 
   return shaping;

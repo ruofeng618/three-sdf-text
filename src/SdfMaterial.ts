@@ -1,4 +1,4 @@
-import { AlphaFormat, Color, DataTexture, Matrix4, ShaderMaterial, Texture, Vector2, Vector3 } from "three";
+import { AlphaFormat, Color, DataTexture, Matrix4, ShaderMaterial, Texture, Vector2} from "three";
 import { getGlCoordMatrix, getLabelPlaneMatrix } from "./utils/symbol-projection";
 import { SdfText } from "./SdfText";
 
@@ -86,7 +86,6 @@ export class SdfMaterial extends ShaderMaterial{
   public set mapSize(v : Vector2) {
     this._mapSize= v;
   }
-  
   private _textField: string;
   private _fontFamily: string;
   private _fontWeight: number;

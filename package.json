@@ -20,8 +20,15 @@
     "build": "tsc && vite build"
   },
   "devDependencies": {
+    "@types/node": "^20.10.5",
     "@types/three": "^0.159.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@mapbox/point-geometry": "^0.1.0",
+    "@mapbox/tiny-sdf": "^2.0.6",
+    "potpack": "^2.0.0",
+    "three": "^0.159.0"
   }
 }

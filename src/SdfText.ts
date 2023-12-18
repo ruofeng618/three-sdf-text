@@ -6,10 +6,10 @@ import { SdfMaterial } from "./SdfMaterial";
 import { SdfGeometry } from "./SdfGeometry";
 import { ITextFeature } from "./types/texttypes";
 export  class SdfText extends Mesh{
-  public glyphAtlas: GlyphAtlas|null;
-  public glyphMap: { [key: number]: StyleGlyph }|null;
+  public glyphAtlas!: GlyphAtlas;
+  public glyphMap!: { [key: number]: StyleGlyph };
   public viewPort!:{width:number,height:number}
-  private fontStack: string;
+  public fontStack!: string;
   public textField = 'name';
   public fontFamily = 'Monaco, monospace';
   public fontWeight = 400;
@@ -22,8 +22,8 @@ export  class SdfText extends Mesh{
   constructor(params:any){
     super()
     const {textFeatures}=params
-    this.glyphAtlas=null;
-    this.glyphMap=null;
+    // this.glyphAtlas=undefined;
+    // this.glyphMap=undefined;
     this.fontStack='';
     this.createGlyphAtlas()
     this.viewPort={
@@ -35,10 +35,9 @@ export  class SdfText extends Mesh{
     this.setTextFeatures(textFeatures);
   }
    private createGlyphAtlas() {
-      const fontStack = `${this.fontFamily} ${this.fontWeight}`;
-      this.fontStack = fontStack;
+      this.fontStack = `${this.fontFamily} ${this.fontWeight}`;
       const glyphMap = getDefaultCharacterSet().map(char => {
-        return generateSDF(fontStack, char);
+        return generateSDF(this.fontStack, char);
       }).reduce((prev, cur) => {
         // @ts-ignore
         prev[cur.id] = cur;
@@ -49,7 +48,7 @@ export  class SdfText extends Mesh{
         this.glyphMap = {};
       }
       //@ts-ignore
-      this.glyphMap[fontStack] = glyphMap; 
+      this.glyphMap[this.fontStack] = glyphMap; 
       this.glyphAtlas = new GlyphAtlas(this.glyphMap);
    }
    public update(){

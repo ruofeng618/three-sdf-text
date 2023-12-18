@@ -103,17 +103,16 @@ export class SdfGeometry extends BufferGeometry{
     const charOffsetBuffer = new Array();
     const indexBuffer= new Array();
 
-    const textOffset: [number, number] = [ this.textOffsetX, this.textOffsetY ];
+    const textOffset= [ this.textOffsetX, this.textOffsetY ];
     // 首先按权重从高到低排序
     // textArray.sort(compareClusterText);
 
     let i = 0;
-    textArray.forEach(({ text, position }) => {
+    textArray?.forEach?.(({ text, position }) => {
       // 锚点
       // const anchor = new Point(position[0], position[1]);
       // 计算布局
-      const shaping = shapeText(text, this.glyphMap, this.fontStack, 0, 24, this.symbolAnchor, this.textJustify, this.textSpacing, textOffset, 1);
-
+      const shaping = shapeText(text, this.glyphMap, this.fontStack,  24, this.symbolAnchor, this.textJustify, this.textSpacing, textOffset);
       if (shaping) {
         // 加入索引
           // 计算每个独立字符相对于锚点的位置信息
@@ -152,6 +151,8 @@ export class SdfGeometry extends BufferGeometry{
     };
   }
   public update(sdfText:SdfText){
-
+    const {glyphMap,fontStack}=sdfText
+    this.fontStack=fontStack;
+    this.glyphMap=glyphMap;
   }
 }
