@@ -1,8 +1,9 @@
-import { AlphaFormat, Color, DataTexture, Matrix4, ShaderMaterial, Texture, Vector2} from "three";
+//@ts-nocheck
+import { AlphaFormat, Color, DataTexture, Matrix4, Material, Texture, Vector2, Shader,RGBAFormat, DoubleSide,UnsignedByteType,UVMapping,ClampToEdgeWrapping,ClampToEdgeWrapping,LinearFilter,LinearFilter, Vector3} from "three";
 import { getGlCoordMatrix, getLabelPlaneMatrix } from "./utils/symbol-projection";
-import { SdfText } from "./SdfText";
+import { log } from "console";
 
-export class SdfMaterial extends ShaderMaterial{
+export class SdfMaterial extends Material{
   public labelPlaneMatrix!:Matrix4;
   public glCoordMatrix!:Matrix4;
   public glyphAtlasTexture!: Texture;
@@ -96,28 +97,56 @@ export class SdfMaterial extends ShaderMaterial{
   private _haloWidth: number;
   private _haloBlur: number;
   private _mapSize:Vector2;
-    constructor(){
+    constructor(params:any){
       super()
-      this._init()
+      const {glyphAtlas,viewPort}=params;
+      const {data,width,height}=glyphAtlas?.image??{};
+      // const width = 140;
+      // const height = 140;
+  
+      // const size = width * height;
+      // let defaultImageData = new Array(size);
+      // defaultImageData.fill(Math.random(), 0, size);
+      // defaultImageData=defaultImageData?.map(()=>{return 0.0})
+      // defaultImageData.fill(Math.random(), 0, size);
+      // this.texture = new THREE.DataTexture(this.defaultImageData, width, height);
+      let pixels = [].slice.call(data);
+      let imageData=new Array(width*height*4);
+      for (let i = 0; i < pixels.length; i++) {
+        imageData[4 * i + 0] = pixels[i];
+        imageData[4 * i + 1] = pixels[i];
+        imageData[4 * i + 2] = pixels[i];
+        imageData[4 * i + 3] = 0.0;
+        
+      }
+      this.glyphAtlasTexture =new DataTexture(new Uint8Array(imageData),width,height,RGBAFormat,UnsignedByteType,UVMapping,ClampToEdgeWrapping,ClampToEdgeWrapping,LinearFilter,LinearFilter);
+      this.labelPlaneMatrix=getLabelPlaneMatrix(new Matrix4(),viewPort);
+      this.glCoordMatrix=getGlCoordMatrix(viewPort);
       this._textField = 'name';
       this._fontFamily = 'Monaco, monospace';
       this._fontWeight = 400;
       this._fontSize = 14.;
-      this._fontColor = new Color(0,0,0);
+      this._fontColor = new Color(1,0,0);
       this._fontOpacity = 1.0;
-      this._haloColor = new Color(255, 255, 255);
+      this._haloColor = new Color(1,1,1);
       this._haloWidth = 1.0;
       this._haloBlur = 0.2;
-      this._mapSize=new Vector2(0,0);
+      this._mapSize=new Vector2(width,height);
       this.needUpdateGlyphAtlasTexture=true;
+      this.setValues();
+      this._init();
+      this.uniforms.u_sdf_map.value = this.glyphAtlasTexture;
+      this.glyphAtlasTexture.needsUpdate = true;
+      this.needsUpdate = true;
+      this.depthTest=false;
+      this.side=DoubleSide
 
     }
     private _init(){
       this.uniforms={
-        u_matrix: {value:new Matrix4()},
+        u_sdf_map:{value:this.glyphAtlasTexture},
         u_label_matrix: {value:this.labelPlaneMatrix},
         u_gl_matrix: {value:this.glCoordMatrix},
-        u_sdf_map: {value:this.glyphAtlasTexture},
         u_sdf_map_size: {value:this.mapSize},
         u_font_size: {value:this.fontSize},
         u_font_color: {value:this.fontColor},
@@ -126,7 +155,7 @@ export class SdfMaterial extends ShaderMaterial{
         u_halo_blur: {value:this.haloBlur},
         u_halo_color: {value:this.haloColor},
         u_debug: {value:0.0},
-        u_gamma_scale:{value:0.3}
+        u_gamma_scale:{value:0.8},
       }
       this.fragmentShader=  `
             #define SDF_PX 8.0
@@ -135,10 +164,10 @@ export class SdfMaterial extends ShaderMaterial{
 
             uniform sampler2D u_sdf_map;
             uniform float u_gamma_scale;
-            uniform vec4 u_font_color;
+            uniform vec3 u_font_color;
             uniform float u_font_size;
             uniform float u_font_opacity;
-            uniform vec4 u_halo_color;
+            uniform vec3 u_halo_color;
             uniform float u_halo_width;
             uniform float u_halo_blur;
             uniform bool u_debug;
@@ -148,8 +177,8 @@ export class SdfMaterial extends ShaderMaterial{
 
             void main() {
                 // get sdf from atlas
-                float dist = texture2D(u_sdf_map, v_uv).a;
-
+                float dist = texture2D(u_sdf_map, v_uv).r;
+                vec4 test_color = texture2D(u_sdf_map, v_uv);
                 float fontScale = u_font_size / 24.0;
                 // lowp float buff = (256.0 - 64.0) / 256.0;
                 // highp float gamma = EDGE_GAMMA / (fontScale * u_gamma_scale);
@@ -161,44 +190,36 @@ export class SdfMaterial extends ShaderMaterial{
 
                 highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist);
 
-                gl_FragColor = mix(u_font_color * u_font_opacity, u_halo_color, smoothstep(0., .5, 1. - dist)) * alpha;
+                //gl_FragColor = mix(vec4(u_font_color.rgb,1.0) * u_font_opacity, vec4(u_halo_color.rgb,1.0), smoothstep(0., .5, 1. - dist)) * alpha;
+                gl_FragColor = vec4(alpha,0.0,0.0,1.0);
 
-                if (u_debug) {
-                    vec4 debug_color = vec4(1., 0., 0., 1.);
-                    gl_FragColor = mix(gl_FragColor, debug_color, 0.5);
-                }
+                // if (u_debug) {
+                //     vec4 debug_color = vec4(1., 0., 0., 1.);
+                //     gl_FragColor = mix(gl_FragColor, debug_color, 0.5);
+                // }
+                //gl_FragColor =vec4(1.0,0.0,0.0,1.0);
             }
       `
       this.vertexShader=  `
             attribute vec2 a_pos;
             attribute vec2 a_tex;
             attribute vec2 a_offset;
-
             uniform vec2 u_sdf_map_size;
             uniform mat4 u_label_matrix;
             uniform mat4 u_gl_matrix;
             uniform float u_font_size;
-
             varying vec2 v_uv;
             varying float v_gamma_scale;
-
             void main() {
                 v_uv = a_tex / u_sdf_map_size;
-
                 float fontScale = u_font_size / 24.;
-
-                vec4 projected_pos = u_label_matrix * vec4(a_pos, 0.0, 1.0);
+                vec4 clip_pos=projectionMatrix*modelViewMatrix*vec4(a_pos, 0.0, 1.0);
+                vec2 ndc_pos=clip_pos.xy/clip_pos.w;
+                vec4 projected_pos = u_label_matrix * vec4(ndc_pos, 0.0, 1.0);
                 gl_Position = u_gl_matrix * vec4(projected_pos.xy / projected_pos.w + a_offset * fontScale, 0.0, 1.0);
-
+                //gl_Position =projectionMatrix*modelViewMatrix*vec4(a_pos+a_offset * fontScale, 0.0, 1.0);
                 v_gamma_scale = gl_Position.w;
             }
       `
     }
-   public update (sdfText:SdfText){
-    const {glyphAtlas,viewPort}=sdfText;
-    const {data,width,height}=glyphAtlas?.image??{}
-    this.glyphAtlasTexture = new DataTexture(data,width,height,AlphaFormat);
-    this.labelPlaneMatrix=getLabelPlaneMatrix(new Matrix4(),viewPort);
-    this.glCoordMatrix=getGlCoordMatrix(viewPort);
-   }
 }

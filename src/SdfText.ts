@@ -13,26 +13,27 @@ export  class SdfText extends Mesh{
   public textField = 'name';
   public fontFamily = 'Monaco, monospace';
   public fontWeight = 400;
-  public fontSize = 14.;
-  public fontColor = [0, 0, 0];
-  public fontOpacity = 1.0;
-  public haloColor = [255, 255, 255];
-  public haloWidth = 1.0;
-  public haloBlur = 0.2;
+  public fontSize = 40;
   constructor(params:any){
     super()
     const {textFeatures}=params
-    // this.glyphAtlas=undefined;
-    // this.glyphMap=undefined;
     this.fontStack='';
     this.createGlyphAtlas()
     this.viewPort={
-      width:100,
-      height:100,
+      width:1920,
+      height:1080,
     }
-    this.material=new SdfMaterial();
-    this.geometry=new SdfGeometry();
-    this.setTextFeatures(textFeatures);
+    this.material=new SdfMaterial({
+      glyphAtlas:this.glyphAtlas,
+      viewPort:this.viewPort
+    });
+    this.geometry=new SdfGeometry({
+      glyphMap:this.glyphMap,
+      fontStack:this.fontStack,
+      textArray:textFeatures,
+      glyphAtlas:this.glyphAtlas,
+    });
+    //this.setTextFeatures(textFeatures);
   }
    private createGlyphAtlas() {
       this.fontStack = `${this.fontFamily} ${this.fontWeight}`;
@@ -51,11 +52,7 @@ export  class SdfText extends Mesh{
       this.glyphMap[this.fontStack] = glyphMap; 
       this.glyphAtlas = new GlyphAtlas(this.glyphMap);
    }
-   public update(){
-    (this.material as SdfMaterial).update(this);
-    (this.geometry as SdfGeometry).update(this);
-   }
    public setTextFeatures(textFeatures: ITextFeature[]){
-     (this.geometry as SdfGeometry).textArray=textFeatures;
+    // (this.geometry as SdfGeometry).textArray=textFeatures;
    }
 }

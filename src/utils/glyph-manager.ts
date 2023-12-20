@@ -2,7 +2,7 @@
 import TinySDF from '@mapbox/tiny-sdf';
 import { AlphaImage, StyleGlyph } from '../symbol/AlphaImage';
 
-const fontsize = 24; // Font size in pixels
+const fontsize = 40; // Font size in pixels
 const buffer = 3;    // Whitespace buffer around a glyph in pixels
 const radius = 8;    // How many pixels around the glyph shape to use for encoding distance
 const cutoff = 0.25  // How much of the radius (relative) is used for the inside part the glyph
@@ -22,7 +22,7 @@ export function isCJK(char: number): boolean {
 
 export function getDefaultCharacterSet(): string[] {
   const charSet = [];
-  for (let i = 32; i < 128; i++) {
+  for (let i = 0; i < 100; i++) {
     charSet.push(String.fromCharCode(i));
   }
   return charSet;
@@ -38,7 +38,6 @@ function extractFontStack(fontStack: string) {
   } else if (/light/i.test(fontStack)) {
     fontWeight = '200';
   }
-
   return {
     fontFamily,
     fontWeight,
@@ -55,7 +54,6 @@ export function generateSDF(fontStack: string = '', char: string): StyleGlyph {
     sdfGenerator = sdfGeneratorCache[fontStack]
       = new TinySDF({fontSize:fontsize, buffer, radius, cutoff, fontFamily, fontWeight});
   }
-
   if (!textMetricsCache[fontStack]) {
     textMetricsCache[fontStack] = {};
   }
@@ -67,20 +65,20 @@ export function generateSDF(fontStack: string = '', char: string): StyleGlyph {
     textMetricsCache[fontStack][char] = sdfGenerator?.ctx.measureText(char).width;
   }
   //glyphAdvance,glyphHeight,glyphLeft,glyphTop,glyphWidth,height,width
-  const {data}=sdfGenerator.draw(char)
+  const {data, width, height, glyphWidth, glyphHeight, glyphLeft, glyphTop, glyphAdvance}=sdfGenerator.draw(char)
   return {
     id: charCode,
     // 在 canvas 中绘制字符，使用 Uint8Array 存储 30*30 sdf 数据
     //@ts-ignore
-    bitmap: new AlphaImage({ width: 30, height: 30 }, data),
+    bitmap: new AlphaImage({ width, height}, data),
     metrics: {
-      width: 24,
-      height: 24,
-      left: 0,
-      top: -5,
+      width: glyphWidth,
+      height: glyphHeight,
+      left: glyphLeft,
+      top: glyphTop,
       // 对于 CJK 需要调整字符间距
       // advance: getCharAdvance(charCode)
-      advance: isCJK(charCode) ? 24 : textMetricsCache[fontStack][char]
+      advance: isCJK(charCode) ? glyphAdvance : textMetricsCache[fontStack][char]
     }
   };
 }

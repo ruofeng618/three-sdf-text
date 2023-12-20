@@ -13,20 +13,12 @@ export function getLabelPlaneMatrix(
   viewport: any,) {
   // @ts-ignore
   const m = new Matrix4 ()
-  // if (pitchWithMap) {
-  //   mat4.identity(m);
-  //   mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
-  //   if (!rotateWithMap) {
-  //     mat4.rotateZ(m, m, transform.angle);
-  //   }
-  // } else {
-  //   mat4.scale(m, m, [transform.width / 2, -transform.height / 2, 1]);
-  //   mat4.translate(m, m, [1, -1, 0]);
-  //   mat4.multiply(m, m, posMatrix);
-  // }
   m.scale(new Vector3(viewport.width / 2, -viewport.height / 2, 1));
-  m.makeTranslation(1, -1, 0);
-  m.multiply(posMatrix)
+  // m.makeTranslation(1, -1, 0);
+  const  translate=new Matrix4();
+  translate.makeTranslation(1, -1, 0);
+  m.multiply(translate);
+  // m.multiply(posMatrix)
   return m;
 }
 
@@ -36,19 +28,11 @@ export function getLabelPlaneMatrix(
 export function getGlCoordMatrix(viewport: any) {
   // @ts-ignore
   const m = new Matrix4();
-  // if (pitchWithMap) {
-  //   mat4.multiply(m, m, posMatrix);
-  //   mat4.scale(m, m, [pixelsToTileUnits, pixelsToTileUnits, 1]);
-  //   if (!rotateWithMap) {
-  //     mat4.rotateZ(m, m, -transform.angle);
-  //   }
-  // } else {
-  //   mat4.scale(m, m, [1, -1, 1]);
-  //   mat4.translate(m, m, [-1, -1, 0]);
-  //   mat4.scale(m, m, [2 / transform.width, 2 / transform.height, 1]);
-  // }
   m.scale(new Vector3(1, -1, 1));
-  m.makeTranslation(-1, -1, 0);
+  // m.makeTranslation(-1, -1, 0);
+  const  translate=new Matrix4();
+  translate.makeTranslation(-1, -1, 0);
+  m.multiply(translate);
   m.scale(new Vector3(2 / viewport.width, 2 / viewport.height, 1));
   return m;
 }

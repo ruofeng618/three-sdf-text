@@ -1,7 +1,6 @@
 import { BufferAttribute, BufferGeometry } from "three";
 import {shapeText,SymbolAnchor, TextJustify} from "./utils/symbol-layout"
 import { ITextFeature } from "./types/texttypes";
-import { SdfText } from "./SdfText";
 import GlyphAtlas from "./symbol/GlyphAtlas";
 import { StyleGlyph } from "./symbol/AlphaImage";
 import { getGlyphQuads } from "./symbol/SymbolQuad";
@@ -80,21 +79,27 @@ export class SdfGeometry extends BufferGeometry{
   private _textJustify!:TextJustify;
   private _textSpacing!:number;
   private _textOffsetX!:number;
-  constructor(){
+  constructor(params:any){
     super();
-    this._textArray=[];
+    const {glyphMap,fontStack,textArray,glyphAtlas}=params;
+    this.glyphAtlas=glyphAtlas;
+    this.fontStack=fontStack;
+    this.glyphMap=glyphMap;
+    this._textArray=textArray;
     this._symbolAnchor= 'center';
     this._textJustify= 'center';
     this._textSpacing= 2;
     this._textOffsetX= 0;
     this._textOffsetY= 0;
+    this.updateAttributes();
   }
   private updateAttributes(){
     const { indexBuffer,charPositionBuffer,charUVBuffer,charOffsetBuffer}=this.buildTextBuffers()
-    this.setAttribute("a_pos", new BufferAttribute(new Float32Array(charPositionBuffer), 2));
-    this.setAttribute("a_tex", new BufferAttribute(new Float32Array(charUVBuffer), 2));
-    this.setAttribute("a_offset", new BufferAttribute(new Float32Array(charOffsetBuffer), 2));
-    this.setIndex(indexBuffer)
+    this.setAttribute("a_pos", new BufferAttribute(new Float32Array(charPositionBuffer?.flat()), 2));
+    this.setAttribute("a_tex", new BufferAttribute(new Float32Array(charUVBuffer?.flat()), 2));
+    this.setAttribute("a_offset", new BufferAttribute(new Float32Array(charOffsetBuffer?.flat()), 2));
+    //@ts-ignore
+    this.setIndex(new BufferAttribute(new Uint16Array(indexBuffer?.flat()), 1));
   }
   private buildTextBuffers() {
     const textArray=this.textArray;
@@ -142,17 +147,11 @@ export class SdfGeometry extends BufferGeometry{
           });
       }
     });
-
     return {
       indexBuffer,
       charPositionBuffer,
       charUVBuffer,
       charOffsetBuffer
     };
-  }
-  public update(sdfText:SdfText){
-    const {glyphMap,fontStack}=sdfText
-    this.fontStack=fontStack;
-    this.glyphMap=glyphMap;
   }
 }

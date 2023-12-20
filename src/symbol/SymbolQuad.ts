@@ -1,5 +1,5 @@
 // @ts-ignore
-import * as Point from '@mapbox/point-geometry';
+import Point from '@mapbox/point-geometry';
 import { Shaping } from '../utils/symbol-layout';
 import { GlyphPosition } from './GlyphAtlas';
 
