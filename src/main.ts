@@ -58,9 +58,9 @@ function init() {
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.outputEncoding = THREE.sRGBEncoding;
   const geometry1 = new THREE.PlaneGeometry( 100, 100 );
-  const material1 = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+  const material1 = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide,wireframe:true} );
   const plane = new THREE.Mesh( geometry1, material1 );
-  //scene.add( plane );
+  scene.add( plane );
   container.appendChild( renderer.domElement );
 
   //

@@ -22,7 +22,7 @@ export function isCJK(char: number): boolean {
 
 export function getDefaultCharacterSet(): string[] {
   const charSet = [];
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 300; i++) {
     charSet.push(String.fromCharCode(i));
   }
   return charSet;

@@ -1,7 +1,6 @@
 //@ts-nocheck
 import { AlphaFormat, Color, DataTexture, Matrix4, Material, Texture, Vector2, Shader,RGBAFormat, DoubleSide,UnsignedByteType,UVMapping,ClampToEdgeWrapping,ClampToEdgeWrapping,LinearFilter,LinearFilter, Vector3, WebGLRenderer} from "three";
 import { getGlCoordMatrix, getLabelPlaneMatrix } from "./utils/symbol-projection";
-import { log } from "console";
 
 export class SdfMaterial extends Material{
   public labelPlaneMatrix!:Matrix4;
