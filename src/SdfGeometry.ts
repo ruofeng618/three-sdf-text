@@ -5,7 +5,9 @@ import GlyphAtlas from "./symbol/GlyphAtlas";
 import { StyleGlyph } from "./symbol/AlphaImage";
 import { getGlyphQuads } from "./symbol/SymbolQuad";
 export class SdfGeometry extends BufferGeometry{
+  
   public dirty=true;
+
   public get glyphAtlas(){
     return this._glyphAtlas;
   }
@@ -26,13 +28,6 @@ export class SdfGeometry extends BufferGeometry{
   public set fontStack(value){
     this.dirty=true;
     this._fontStack=value
-  }
-  public get textOffsetY(){
-    return this._textOffsetY
-  }
-  public set textOffsetY(value){
-    this.dirty=true;
-    this._textOffsetY=value
   }
   public get symbolAnchor(){
     return this._symbolAnchor
@@ -55,6 +50,13 @@ export class SdfGeometry extends BufferGeometry{
     this.dirty=true;
     this._textSpacing=value
   }
+  public get textOffsetY(){
+    return this._textOffsetY
+  }
+  public set textOffsetY(value){
+    this.dirty=true;
+    this._textOffsetY=value
+  }
   public get textOffsetX(){
     return this._textOffsetX
   }
@@ -62,18 +64,18 @@ export class SdfGeometry extends BufferGeometry{
     this.dirty=true;
     this._textOffsetX=value
   }
-  public get textArray(){
-    return this._textArray
+  public get textFeatures(){
+    return this._textFeatures
   }
-  public set textArray(value){
+  public set textFeatures(value){
     this.dirty=true;
-    this._textArray=value
+    this._textFeatures=value
     this.updateAttributes()
   }
   private _glyphAtlas!: GlyphAtlas;
   private _glyphMap!: { [key: number]: StyleGlyph; };
   private _fontStack!: string;
-  private _textArray!:ITextFeature[];
+  private _textFeatures!:ITextFeature[];
   private _textOffsetY!:number;
   private _symbolAnchor!:SymbolAnchor;
   private _textJustify!:TextJustify;
@@ -81,28 +83,29 @@ export class SdfGeometry extends BufferGeometry{
   private _textOffsetX!:number;
   constructor(params:any){
     super();
-    const {glyphMap,fontStack,textArray,glyphAtlas}=params;
+    const {glyphMap,fontStack,textFeatures,glyphAtlas}=params;
     this.glyphAtlas=glyphAtlas;
     this.fontStack=fontStack;
     this.glyphMap=glyphMap;
-    this._textArray=textArray;
-    this._symbolAnchor= 'center';
+    this._textFeatures=textFeatures;
+    this._symbolAnchor='center';
     this._textJustify= 'center';
     this._textSpacing= 2;
     this._textOffsetX= 0;
     this._textOffsetY= 0;
     this.updateAttributes();
   }
-  private updateAttributes(){
+  public updateAttributes(){
+    if(!this.dirty) return;
     const { indexBuffer,charPositionBuffer,charUVBuffer,charOffsetBuffer}=this.buildTextBuffers()
     this.setAttribute("a_pos", new BufferAttribute(new Float32Array(charPositionBuffer?.flat()), 2));
     this.setAttribute("a_tex", new BufferAttribute(new Float32Array(charUVBuffer?.flat()), 2));
     this.setAttribute("a_offset", new BufferAttribute(new Float32Array(charOffsetBuffer?.flat()), 2));
     //@ts-ignore
     this.setIndex(new BufferAttribute(new Uint16Array(indexBuffer?.flat()), 1));
+    this.dirty=false;
   }
   private buildTextBuffers() {
-    const textArray=this.textArray;
     const charPositionBuffer = new Array();
     const charUVBuffer = new Array();
     const charOffsetBuffer = new Array();
@@ -113,7 +116,7 @@ export class SdfGeometry extends BufferGeometry{
     // textArray.sort(compareClusterText);
 
     let i = 0;
-    textArray?.forEach?.(({ text, position }) => {
+    this?.textFeatures?.forEach?.(({ text, position }) => {
       // 锚点
       // const anchor = new Point(position[0], position[1]);
       // 计算布局

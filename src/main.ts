@@ -2,10 +2,11 @@
 import * as THREE from 'three';
 import {SdfText} from "./SdfText"
 import {OrbitControls} from "three/addons/controls/OrbitControls";
+import * as dat from 'dat.gui';
 
 let container;
 let camera, scene, renderer,controls;
-
+const gui = new dat.GUI();
 let mesh,sdf;
 const textFeatures=[
   {text:'5CM',position:[0,10]},
@@ -26,7 +27,48 @@ function init() {
 
   camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 200);
   camera.position.z = 80;
-  sdf=new SdfText({textFeatures:textFeatures})
+  sdf=new SdfText({textFeatures:textFeatures});
+  const textFolder = gui.addFolder('font');
+  textFolder.add(sdf, 'fontFamily', [
+    'Monaco, monospace',
+    'sans-serif',
+  ]).onChange(() => {
+
+  });
+  textFolder.add(sdf, 'fontWeight', 400, 1000).onChange(() => {
+  });
+  textFolder.add(sdf, 'fontSize', 8, 128).onChange(() => {
+
+  });
+  textFolder.addColor(sdf, 'fontColor').onChange(() => {
+
+  });
+  textFolder.add(sdf, 'fontOpacity', 0, 1, 0.1).onChange(() => {
+
+  });
+  textFolder.addColor(sdf, 'haloColor').onChange(() => {
+
+  });
+  textFolder.add(sdf, 'haloWidth', 0, 24, 0.1).onChange(() => {
+
+  });
+  textFolder.add(sdf, 'haloBlur', 0, 2, 0.1).onChange(() => {
+
+  });
+
+  const layoutFolder = gui.addFolder('label layout');
+  layoutFolder.add(sdf, 'symbolAnchor', [ 'center', 'left', 'right', 'top', 'bottom', 'top-left', 'top-right', 'bottom-left', 'bottom-right' ]).onChange(() => {
+
+  });
+  layoutFolder.add(sdf, 'textSpacing', 0, 10, 0.1).onChange(() => {
+
+  });
+  layoutFolder.add(sdf, 'textOffsetX', -20, 20, 0.1).onChange(() => {
+
+  });
+  layoutFolder.add(sdf, 'textOffsetY', -20, 20, 0.1).onChange(() => {
+
+  });
   const {glyphAtlas}=sdf;
   const {data,width,height}=glyphAtlas.image;
   let pixels = [].slice.call(data);

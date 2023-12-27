@@ -1,37 +1,13 @@
 //@ts-nocheck
 import { AlphaFormat, Color, DataTexture, Matrix4, Material, Texture, Vector2, Shader,RGBAFormat, DoubleSide,UnsignedByteType,UVMapping,ClampToEdgeWrapping,ClampToEdgeWrapping,LinearFilter,LinearFilter, Vector3, WebGLRenderer} from "three";
-import { getGlCoordMatrix, getLabelPlaneMatrix } from "./utils/symbol-projection";
+import { getGlCoordMatrix, getLabelPlaneMatrix } from "./utils/transform";
+import {AlphaImage} from "./symbol/AlphaImage";
 
 export class SdfMaterial extends Material{
   public labelPlaneMatrix!:Matrix4;
   public glCoordMatrix!:Matrix4;
   public glyphAtlasTexture!: Texture;
   public needUpdateGlyphAtlasTexture:boolean;
-  public get textField() : string {
-    return this._textField
-  }
-  public set textField(v : string) {
-    this._textField = v;
-    this.dirty=true;
-  }
-  
-  public get fontFamily() : string {
-    return this._fontFamily
-  }
-  
-  public set fontFamily(v : string) {
-    this._fontFamily = v;
-    this.dirty=true;
-  }
-  
-  public get fontWeight() : number {
-    return this._fontWeight
-  }
-  
-  public set fontWeight(v : number) {
-    this._fontWeight = v;
-    this.dirty=true;
-  }
   
   public set fontSize(v : number) {
     this._fontSize = v;
@@ -95,32 +71,68 @@ export class SdfMaterial extends Material{
     this._mapSize= v;
     this.dirty=true;
   }
+
+  public get viewport() : {width:number,height:number} {
+    return this._viewport;
+  }
+
+  public set viewport(v : {width:number,height:number}) {
+    this._viewport = v;
+    this.dirty=true;
+    this.labelPlaneMatrix=getLabelPlaneMatrix(v);
+    this.glCoordMatrix=getGlCoordMatrix(v);
+  }
+
+  
+  public get image() : AlphaImage {
+    return this._image;
+  }
+  
+  
+  public set image(v : AlphaImage) {
+    if(!v)return;
+    this._image = v;
+    this.dirty=true;
+    this.updatagLyphAtlasTexture(v)
+  }
+  
+
   public dirty:boolean;
+
   private _textField: string;
+
   private _fontFamily: string;
+
   private _fontWeight: number;
+
   private _fontSize: number;
+
   private _fontColor:Color;
+
   private _fontOpacity: number;
+
   private _haloColor: Color;
+
   private _haloWidth: number;
+
   private _haloBlur: number;
+
   private _mapSize:Vector2;
   
+  private _viewport:{width:number,height:number};
+
+  private _image:AlphaImage;
+
     constructor(params:any){
       super()
       const {image,viewport}=params;
-      this.updatagLyphAtlasTexture(image)
+      this.image=image;
       this.dirty=true;
-      this.labelPlaneMatrix=getLabelPlaneMatrix(viewport);
-      this.glCoordMatrix=getGlCoordMatrix(viewport);
-      this._textField = 'name';
-      this._fontFamily = 'Monaco, monospace';
-      this._fontWeight = 400;
+      this.viewport=viewport;
       this._fontSize = 14.;
       this._fontColor = new Color(1,0,0);
       this._fontOpacity = 1.0;
-      this._haloColor = new Color(1,1,1);
+      this._haloColor = new Color(0,1,1);
       this._haloWidth = 1.0;
       this._haloBlur = 0.2;
       this.needUpdateGlyphAtlasTexture=true;
@@ -128,8 +140,8 @@ export class SdfMaterial extends Material{
       this._init();
       this.needsUpdate = true;
       this.depthTest=false;
-      this.side=DoubleSide
-
+      this.side=DoubleSide;
+      this.transparent=true;
     }
     private _init(){
       this.uniforms={
@@ -179,14 +191,13 @@ export class SdfMaterial extends Material{
 
                 highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist);
 
-                //gl_FragColor = mix(vec4(u_font_color.rgb,1.0) * u_font_opacity, vec4(u_halo_color.rgb,1.0), smoothstep(0., .5, 1. - dist)) * alpha;
-                gl_FragColor = vec4(alpha,0.0,0.0,1.0);
+                gl_FragColor = mix(vec4(u_font_color.rgb,1.0) * u_font_opacity, vec4(u_halo_color.rgb,1.0), smoothstep(0., .5, 1. - dist)) * alpha;
+                //gl_FragColor = vec4(alpha,0.0,0.0,1.0);
 
                 // if (u_debug) {
                 //     vec4 debug_color = vec4(1., 0., 0., 1.);
                 //     gl_FragColor = mix(gl_FragColor, debug_color, 0.5);
                 // }
-                //gl_FragColor =vec4(1.0,0.0,0.0,1.0);
             }
       `
       this.vertexShader=  `
@@ -215,9 +226,6 @@ export class SdfMaterial extends Material{
             }
       `
     }
-    onBeforeCompile(shader: Shader, renderer: WebGLRenderer): void {
-        if(this.dirty) this.updateUniforms();
-    }
     public updatagLyphAtlasTexture(image){
       const {data,width,height}=image??{};
       let pixels = [].slice.call(data);
@@ -232,7 +240,7 @@ export class SdfMaterial extends Material{
       this.glyphAtlasTexture =new DataTexture(new Uint8Array(pixelData),width,height,RGBAFormat,UnsignedByteType,UVMapping,ClampToEdgeWrapping,ClampToEdgeWrapping,LinearFilter,LinearFilter);
       this.glyphAtlasTexture.needsUpdate = true;
     }
-    private updateUniforms(){
+    public updateUniforms(){
       this.uniforms.u_sdf_map.value=this.glyphAtlasTexture;
       this.uniforms.u_label_matrix.value=this.labelPlaneMatrix;
       this.uniforms.u_gl_matrix.value=this.glCoordMatrix;
@@ -246,5 +254,6 @@ export class SdfMaterial extends Material{
       this.uniforms.u_debug.value=0.0;
       this.uniforms.u_gamma_scale.value=0.8;
       this.dirty=false;
+      this.needsUpdate=true;
     }
 }
