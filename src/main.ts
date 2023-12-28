@@ -98,7 +98,6 @@ function init() {
   renderer = new THREE.WebGLRenderer();
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
-  renderer.outputEncoding = THREE.sRGBEncoding;
   const geometry1 = new THREE.PlaneGeometry( 100, 100 );
   const material1 = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide,wireframe:true} );
   const plane = new THREE.Mesh( geometry1, material1 );

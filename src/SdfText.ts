@@ -108,6 +108,13 @@ export  class SdfText extends Mesh{
   public set textOffsetX(value){
     this.geometry.textOffsetX=value
   }
+  public get textFeatures(){
+    return this._textFeatures
+  }
+  public set textFeatures(value){
+    this._textFeatures=value
+  }
+
   public dirty=true;
 
   public glyphAtlas!: GlyphAtlas;
@@ -127,6 +134,8 @@ export  class SdfText extends Mesh{
   private _fontWeight:number;
 
   private _charSets:Array<string>
+
+  private _textFeatures!:ITextFeature[];
 
   constructor(params:any){
     super()
@@ -170,7 +179,7 @@ export  class SdfText extends Mesh{
    }
    public onBeforeRender(): void {
       if(this.dirty)this.createGlyphAtlas();
-      this?.geometry?.updateAttributes()
+      this?.geometry?.updateAttributes();
       this?.material?.updateUniforms();
       this.dirty=false;
    }

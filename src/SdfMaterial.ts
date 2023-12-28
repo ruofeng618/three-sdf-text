@@ -4,10 +4,12 @@ import { getGlCoordMatrix, getLabelPlaneMatrix } from "./utils/transform";
 import {AlphaImage} from "./symbol/AlphaImage";
 
 export class SdfMaterial extends Material{
+
   public labelPlaneMatrix!:Matrix4;
+
   public glCoordMatrix!:Matrix4;
+
   public glyphAtlasTexture!: Texture;
-  public needUpdateGlyphAtlasTexture:boolean;
   
   public set fontSize(v : number) {
     this._fontSize = v;
@@ -135,7 +137,6 @@ export class SdfMaterial extends Material{
       this._haloColor = new Color(0,1,1);
       this._haloWidth = 1.0;
       this._haloBlur = 0.2;
-      this.needUpdateGlyphAtlasTexture=true;
       this.setValues();
       this._init();
       this.needsUpdate = true;
@@ -192,7 +193,7 @@ export class SdfMaterial extends Material{
                 highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist);
 
                 gl_FragColor = mix(vec4(u_font_color.rgb,1.0) * u_font_opacity, vec4(u_halo_color.rgb,1.0), smoothstep(0., .5, 1. - dist)) * alpha;
-                //gl_FragColor = vec4(alpha,0.0,0.0,1.0);
+                //gl_FragColor = vec4(1.0,0.0,0.0,1.0);
 
                 // if (u_debug) {
                 //     vec4 debug_color = vec4(1., 0., 0., 1.);

@@ -1,11 +1,11 @@
-import { BufferAttribute, BufferGeometry } from "three";
+import { BufferAttribute,Float32BufferAttribute,Int32BufferAttribute , BufferGeometry } from "three";
 import {shapeText,SymbolAnchor, TextJustify} from "./utils/symbol-layout"
 import { ITextFeature } from "./types/texttypes";
 import GlyphAtlas from "./symbol/GlyphAtlas";
 import { StyleGlyph } from "./symbol/AlphaImage";
 import { getGlyphQuads } from "./symbol/SymbolQuad";
 export class SdfGeometry extends BufferGeometry{
-  
+
   public dirty=true;
 
   public get glyphAtlas(){
@@ -81,6 +81,10 @@ export class SdfGeometry extends BufferGeometry{
   private _textJustify!:TextJustify;
   private _textSpacing!:number;
   private _textOffsetX!:number;
+  private a_pos:BufferAttribute;
+  private a_tex:BufferAttribute;
+  private a_offset:BufferAttribute;
+  private indice:BufferAttribute;
   constructor(params:any){
     super();
     const {glyphMap,fontStack,textFeatures,glyphAtlas}=params;
@@ -97,12 +101,27 @@ export class SdfGeometry extends BufferGeometry{
   }
   public updateAttributes(){
     if(!this.dirty) return;
-    const { indexBuffer,charPositionBuffer,charUVBuffer,charOffsetBuffer}=this.buildTextBuffers()
-    this.setAttribute("a_pos", new BufferAttribute(new Float32Array(charPositionBuffer?.flat()), 2));
-    this.setAttribute("a_tex", new BufferAttribute(new Float32Array(charUVBuffer?.flat()), 2));
-    this.setAttribute("a_offset", new BufferAttribute(new Float32Array(charOffsetBuffer?.flat()), 2));
-    //@ts-ignore
-    this.setIndex(new BufferAttribute(new Uint16Array(indexBuffer?.flat()), 1));
+    // this.dispose();
+    const { indexBuffer,charPositionBuffer,charUVBuffer,charOffsetBuffer}=this.buildTextBuffers();
+    if(this.a_pos){
+      this.updateAttribute(this.a_pos.array,charPositionBuffer?.flat());
+      this.updateAttribute(this.a_tex.array,charUVBuffer?.flat());
+      this.updateAttribute(this.a_offset.array,charOffsetBuffer?.flat());
+      this.updateAttribute(this.indice.array,indexBuffer?.flat());
+      this.a_pos.needsUpdate=true;
+      this.a_tex.needsUpdate=true;
+      this.a_offset.needsUpdate=true;
+      this.indice.needsUpdate=true;
+    }else{
+      this.a_pos=new Float32BufferAttribute(charPositionBuffer?.flat(), 2);
+      this.a_tex=new Float32BufferAttribute(charUVBuffer?.flat(), 2);
+      this.a_offset=new Float32BufferAttribute(charOffsetBuffer?.flat(), 2);
+      this.indice=new BufferAttribute(new Uint16Array(indexBuffer?.flat()), 1);
+      this.setAttribute("a_pos", this.a_pos);
+      this.setAttribute("a_tex",this.a_tex);
+      this.setAttribute("a_offset",this.a_offset);
+      this.setIndex(this.indice);
+    }
     this.dirty=false;
   }
   private buildTextBuffers() {
@@ -156,5 +175,10 @@ export class SdfGeometry extends BufferGeometry{
       charUVBuffer,
       charOffsetBuffer
     };
+  }
+  private updateAttribute(preValues:[],values:[]){
+    for (let i = 0; i < values.length; i++) {
+      preValues[i] = values[i];   
+    }
   }
 }
