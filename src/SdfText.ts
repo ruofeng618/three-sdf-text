@@ -17,8 +17,10 @@ export  class SdfText extends Mesh{
     return this.material.fontColor
   }
   
-  public set fontColor(v : Color) {
-    this.material.fontColor= v;
+  public set fontColor(v : string|Object) {
+    //@ts-ignore
+    const color= v instanceof Object?new Color(v.r,v.g,v.b):new Color(v)
+    this.material.fontColor= color;
   }
   
   public get fontOpacity() : number {
@@ -33,8 +35,10 @@ export  class SdfText extends Mesh{
     return this.material.haloColor
   }
   
-  public set haloColor(v : Color) {
-    this.material.haloColor = v;
+  public set haloColor(v : string|Object) {
+    //@ts-ignore
+    const color= v instanceof Object ?new Color(v.r,v.g,v.b):new Color(v)
+    this.material.haloColor = color;
   }
   
   public get haloWidth() : number {

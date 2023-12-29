@@ -1,4 +1,4 @@
-import { BufferAttribute,Float32BufferAttribute,Int32BufferAttribute , BufferGeometry } from "three";
+import { BufferAttribute,Float32BufferAttribute,BufferGeometry } from "three";
 import {shapeText,SymbolAnchor, TextJustify} from "./utils/symbol-layout"
 import { ITextFeature } from "./types/texttypes";
 import GlyphAtlas from "./symbol/GlyphAtlas";
@@ -81,10 +81,10 @@ export class SdfGeometry extends BufferGeometry{
   private _textJustify!:TextJustify;
   private _textSpacing!:number;
   private _textOffsetX!:number;
-  private a_pos:BufferAttribute;
-  private a_tex:BufferAttribute;
-  private a_offset:BufferAttribute;
-  private indice:BufferAttribute;
+  private a_pos!: BufferAttribute;
+  private a_tex!: BufferAttribute;
+  private a_offset!: BufferAttribute;
+  private indice!: BufferAttribute;
   constructor(params:any){
     super();
     const {glyphMap,fontStack,textFeatures,glyphAtlas}=params;
@@ -104,9 +104,13 @@ export class SdfGeometry extends BufferGeometry{
     // this.dispose();
     const { indexBuffer,charPositionBuffer,charUVBuffer,charOffsetBuffer}=this.buildTextBuffers();
     if(this.a_pos){
+      //@ts-ignore
       this.updateAttribute(this.a_pos.array,charPositionBuffer?.flat());
+      //@ts-ignore
       this.updateAttribute(this.a_tex.array,charUVBuffer?.flat());
+      //@ts-ignore
       this.updateAttribute(this.a_offset.array,charOffsetBuffer?.flat());
+      //@ts-ignore
       this.updateAttribute(this.indice.array,indexBuffer?.flat());
       this.a_pos.needsUpdate=true;
       this.a_tex.needsUpdate=true;
